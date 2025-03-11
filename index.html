@@ -24,6 +24,7 @@
 <body>
     <h2>QR Code Generator for Audio</h2>
     <input type="file" id="fileInput" accept=".wav">
+    <p id="uploadStatus"></p>
     <div id="qr-container">
         <div id="qrcode"></div>
     </div>
@@ -32,27 +33,41 @@
     <script>
         document.getElementById("fileInput").addEventListener("change", function(event) {
             let file = event.target.files[0];
-
-            if (file && file.type === "audio/wav") {
-                let fileURL = URL.createObjectURL(file);
-                
-                // Show the audio player
-                let audioPlayer = document.getElementById("audioPlayer");
-                audioPlayer.src = fileURL;
-                audioPlayer.style.display = "block";
-
-                // Generate QR code
-                let qrContainer = document.getElementById("qrcode");
-                qrContainer.innerHTML = ""; // Clear previous QR code
-
-                new QRCode(qrContainer, {
-                    text: fileURL,
-                    width: 200,
-                    height: 200
-                });
-            } else {
+            if (!file || file.type !== "audio/wav") {
                 alert("Please upload a valid .wav file.");
+                return;
             }
+
+            document.getElementById("uploadStatus").innerText = "Uploading...";
+
+            let formData = new FormData();
+            formData.append("file", file);
+
+            fetch("https://file.io", { method: "POST", body: formData })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    let fileURL = data.link; // Get public URL
+
+                    document.getElementById("uploadStatus").innerHTML = `<a href="${fileURL}" target="_blank">File Link</a>`;
+
+                    let audioPlayer = document.getElementById("audioPlayer");
+                    audioPlayer.src = fileURL;
+                    audioPlayer.style.display = "block";
+
+                    let qrContainer = document.getElementById("qrcode");
+                    qrContainer.innerHTML = ""; // Clear previous QR code
+
+                    new QRCode(qrContainer, {
+                        text: fileURL,
+                        width: 200,
+                        height: 200
+                    });
+                } else {
+                    alert("Upload failed. Try again.");
+                }
+            })
+            .catch(() => alert("Upload error. Check your internet connection."));
         });
     </script>
 </body>
