@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Code Generator for Audio</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 20px;
+        }
+        #qr-container {
+            margin-top: 20px;
+        }
+        #qrcode {
+            margin: auto;
+            width: 200px;
+            height: 200px;
+        }
+    </style>
+</head>
+<body>
+    <h2>QR Code Generator for Audio</h2>
+    <input type="file" id="fileInput" accept=".wav">
+    <div id="qr-container">
+        <div id="qrcode"></div>
+    </div>
+    <audio id="audioPlayer" controls style="display:none;"></audio>
+
+    <script>
+        document.getElementById("fileInput").addEventListener("change", function(event) {
+            let file = event.target.files[0];
+
+            if (file && file.type === "audio/wav") {
+                let fileURL = URL.createObjectURL(file);
+                
+                // Show the audio player
+                let audioPlayer = document.getElementById("audioPlayer");
+                audioPlayer.src = fileURL;
+                audioPlayer.style.display = "block";
+
+                // Generate QR code
+                let qrContainer = document.getElementById("qrcode");
+                qrContainer.innerHTML = ""; // Clear previous QR code
+
+                new QRCode(qrContainer, {
+                    text: fileURL,
+                    width: 200,
+                    height: 200
+                });
+            } else {
+                alert("Please upload a valid .wav file.");
+            }
+        });
+    </script>
+</body>
+</html>
